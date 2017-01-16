@@ -17,6 +17,15 @@ The task was to:
 # Pre-Processing
 
 # Results
+I have taken two video - one per track uploaded on youtube:
+
+* Track 1: https://youtu.be/iqy6XQ0H5s0
+* [![https://youtu.be/iqy6XQ0H5s0](https://img.youtube.com/vi/iqy6XQ0H5s0/0.jpg)](https://www.youtube.com/watch?v=iqy6XQ0H5s0)
+
+* Track 2: https://youtu.be/XvbJq8dvNRY
+* [![https://youtu.be/XvbJq8dvNRY](https://img.youtube.com/vi/XvbJq8dvNRY/0.jpg)](https://www.youtube.com/watch?v=XvbJq8dvNRY)
+
+Note that the recording are in a quite low quality due to adverse influences of the recording program when recoreded in a higher quality (see also 'Other' for details)
 
 # Other
 To document the performance of the trained network on both tracks I atempted to screen-record a video of the Simulator's Autonomous Mode. It was noticed that the actual recording influenced the notebooks performance adversly so that the Simulator struggled to output enough frames per second - or at least much less than without the recording. 
