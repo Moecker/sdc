@@ -1,5 +1,5 @@
 # Introduction
-This GitHub Repository contains the code targeting the Behavioral Cloning Project of the Udacity Self Driving Car Nanodegree.
+This repository contains the code targeting the *Behavioral Cloning Project of the Udacity Self Driving Car Nanodegree*.
 The Behavioral Cloning Project aims to copy the human control of a car in a simulator. It uses a Convolutional Deep Neural Network to train a model based on virtual camera images taken from the simulator's car.
 
 It hence shall mimik a real conceivable training task of a real car taken images from a real road. 
@@ -10,9 +10,9 @@ The task was to:
 * third, evaluate the autonomous driving performance in the simulator's autonomous mode. The simulator hereby takes the trained model and it weights to instantenly compute the correct steering angle for each frame.
 
 # Approach
-The approach for the project was a mix between reading trough the mentioned NVidia paper, helpful Medium blog posts and Slack message, recommended articels by other SDC-lers and a handful of engineering try-and-error. 
+The approach to tackle this project was a mix of reading trough the mentioned NVidia paper, studying helpful Medium blog posts and Slack message, reading recommended articels by other SDC-lers and applying a handful of engineering try-and-error. 
 
-## Recovery
+## Car Recovery
 We can incorporate the left and right camera images to simulate recovery, by adding or subtracting an artificial steering angle to the center steering value according to the direction.
 
 # Data Description
@@ -31,10 +31,10 @@ The *IMG* folder contains the actual captured images in jpg format, visualized a
 ![cameras](exploration/2017-01-18 21_41_42-exploration.png)
 
 ## Distribution
-By plotting the distribution of the steering angles, we can observe that most of the time the steering angle is close to zero
+By plotting the distribution of the steering angles, we can observe that most of the time the steering angle is close to zero:
 * Strong steering angles are very rare
 * There is a bias towards steering angles which are positive
-Hence the data set is very unbalanced towards small steering angles which can be problematic in strong curves. Also the bias of positive angles can be problematic.
+Hence, the data set is very unbalanced towards small steering angles which can be problematic in strong curves. Also the bias of positive angles can be problematic.
 
 ![distribution_before](exploration/2017-01-18 21_42_48-exploration.png)
 
@@ -81,10 +81,19 @@ First, each image was cropped at the top and bottom, rationale:
 Using left and right camera images to simulate the effect of car wandering off to the side, and recovering. We will add a small angle 0.25 to the left camera and subtract a small angle of 0.25 from the right camera. The main idea being the left camera has to move right to get to center, and right camera has to move left.
 #### Flip the images horizontally
 Since the dataset has a lot more images with the car turning left than right(because there are more left turns in the track), you can flip the image horizontally to simulate turing right and also reverse the corressponding steering angle.
-#### Brightness Adjustment
+#### Brightness Altering
 In this you adjust the brightness of the image to simulate driving in different lighting conditions
-#### Add Random Shadows
+
+Visualization of the augmentation techniques: Multiple cameras, Flipping and Brightness Altering
+![aug1](exploration/2017-01-18 21_43_33-exploration.png)
+
+#### Traversion of images
+tbd.
+#### Adding Shadows
 By adding random shadows we can increase the number of augmented images to as many as we want. The idea behind the shadowing is that the network will be trained to detect the actual important edges of the street and no edges introduced by bad lightning conditons.
+
+Visualization of the augmentation techniques: Traversion and Adding Shadows
+![aug2](exploration/2017-01-18 21_43_42-exploration.png)
 
 # Results
 I have taken two video - one per track uploaded on youtube:
@@ -98,6 +107,8 @@ I have taken two video - one per track uploaded on youtube:
 [![https://youtu.be/XvbJq8dvNRY](https://img.youtube.com/vi/XvbJq8dvNRY/0.jpg)](https://www.youtube.com/watch?v=XvbJq8dvNRY)
 
 Note that the recording are in a quite low quality due to adverse influences of the recording program when recoreded in a higher quality (see also 'Other' for details)
+
+During training the mean squared error loss function indeed went down, but was a quite unreliable indicator for the actual success of the simluation. The only valid feedback was the test in the simluator itself.
 
 # Acknowledgment
 To document the performance of the trained network on both tracks I atempted to screen-record a video of the Simulator's Autonomous Mode. It was noticed that the actual recording influenced the notebooks performance adversly so that the Simulator struggled to output enough frames per second - or at least much less than without the recording. 
