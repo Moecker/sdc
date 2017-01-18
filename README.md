@@ -1,6 +1,3 @@
-# Welcome
-Behavioral Cloning Project of the Udacity Self Driving Car Nanodegree
-
 # Introduction
 This GitHub Repository contains the code targeting the Behavioral Cloning Project of the Udacity Self Driving Car Nanodegree.
 The Behavioral Cloning Project aims to copy the human control of a car in a simulator. It uses a Convolutional Deep Neural Network to train a model based on virtual camera images taken from the simulator's car.
@@ -12,7 +9,7 @@ The task was to:
 * second, train a network using the recorded images and a csv file containing the corresponding steering angles per image. The networks layout was choosen free of choice.
 * third, evaluate the autonomous driving performance in the simulator's autonomous mode. The simulator hereby takes the trained model and it weights to instantenly compute the correct steering angle for each frame.
 
-# Data Desciption
+# Data Description
 As described in te exploration document [exploration.html](exploration.html), the data set consists of mainly the two inputs:
 * driving_log.csv
 * images of three virtual cmaeras
@@ -27,6 +24,20 @@ The *IMG* folder contains the actual captured images in jpg format, visualized a
 
 ![cameras](exploration/2017-01-18 21_41_42-exploration.png)
 
+## Distribution
+By plotting the distribution of the steering angles, we can observe that most of the time the steering angle is close to zero
+* Strong steering angles are very rare
+* There is a bias towards steering angles which are positive
+Hence the data set is very unbalanced towards small steering angles which can be problematic in strong curves. Also the bias of positive angles can be problematic.
+
+![distribution_before](exploration/2017-01-18 21_42_48-exploration.png)
+
+## Countermeasures
+* Countermeasuresfor positive steering angle bias: The images can be flipped horizontally (and invert the corresponding steering angle), so that we can reduce the bias for turing left (see section 'Pre-Processing')
+* Countermeasure for small steering angle bias: Possible solution is to increase the number if images and steering angles where we detect a high degree of curvature, based on the actual input steering angle. By duplicating those detected images we get a slighty more balanced dataset.
+
+![distribution_after](exploration/2017-01-18 21_43_00-exploration.png)
+
 # Model
 The model of the network used for training is a sequential keras model with five layers.
 
@@ -36,19 +47,23 @@ The model of the network used for training is a sequential keras model with five
 
 3. A last Convolution layer with again ELU activation, Droput with same 40% keep probability is followed. The Output shape is 13x13x8, since the subsample is (1, 1) with valid padding.
 
-* A flatten layer transforms the 3 dimensional (4 if you take the actual batches into account) into a flat one.
+4. A flatten layer transforms the 3 dimensional (4 if you take the actual batches into account) into a flat one.
 
-4. The foruth layer is the first Dense one, reducing the dimension to 1024, using Dropout and likewise an ELU activation.
+5. The fourth layer is the first Dense one, reducing the dimension to 1024, using Dropout and likewise an ELU activation.
 
-5. Eventually a Dense layer with ELU activastion closes the main layer-stack reducing the output shape to 512.
+6. Eventually a Dense layer with ELU activastion closes the main layer-stack reducing the output shape to 512.
 
-* Since we are not interested into a classification but rather are confornted with a regression problem, we add a simple single dense layer of output shape, which can be understood as the actual value of the output steering angle.
+7. Since we are not interested into a classification but rather are confornted with a regression problem, we add a simple single dense layer of output shape, which can be understood as the actual value of the output steering angle.
 
+## Model Visualized
 The model is summarized and visualized as follow:
 
-![cameras](model.png)
+![model](model.png)
 
 # Pre-Processing
+
+![cameras](exploration/raw3.jpg)
+![cameras](exploration/raw3.jpg)
 
 # Results
 I have taken two video - one per track uploaded on youtube:
