@@ -131,35 +131,35 @@ def build_model():
     # Create a sequential model
     model = Sequential()
 
-    # Layer 1: Convolution + ELU, Output shape is 32x60x20
+    # Layer 1: Convolution + ELU, Output shape is 32x32x32
     input_shape = (kRows, kCols, kChannels)
     model.add(Convolution2D(32, 5, 5, input_shape=input_shape, subsample=(2, 2), border_mode="same"))
     model.add(ELU())
 
-    # Layer 2: Convolution + MaxPooling + ELU + Dropout, Output shape is 15x30x10
+    # Layer 2: Convolution + MaxPooling + ELU + Dropout, Output shape is 15x15x16
     model.add(Convolution2D(16, 3, 3, subsample=(1, 1), border_mode="valid"))
     model.add(ELU())
     model.add(Dropout(.4))
     model.add(MaxPooling2D((2, 2), border_mode='valid'))
 
-    # Layer 3: Convolution + ELU + Droput, Output shape is 12x27x7
+    # Layer 3: Convolution + ELU + Droput, Output shape is 13x13x8
     model.add(Convolution2D(8, 3, 3, subsample=(1, 1), border_mode="valid"))
     model.add(ELU())
     model.add(Dropout(.4))
 
-    # Flatten the output
+    # Flatten the input, Output is o shape 1352
     model.add(Flatten())
 
-    # Layer 4: Dense + Dropout + ELU
+    # Layer 4: Dense + Dropout + ELU, Output is o shape 1024
     model.add(Dense(1024))
     model.add(Dropout(.3))
     model.add(ELU())
 
-    # Layer 5: Dense + ELU
+    # Layer 5: Dense + ELU, Output is o shape 512
     model.add(Dense(512))
     model.add(ELU())
 
-    # Finally add a single dense layer, since this is a regression problem
+    # Finally add a single dense layer, since this is a regression problem, Output is o shape 1
     model.add(Dense(1))
 	
 	# Compile using mse as loss function (softmax would be wrong since we do regression)
