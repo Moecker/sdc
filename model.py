@@ -27,7 +27,7 @@ kTargetImageSize = (kCols, kRows)
 kEpochs = 12
 kSamplePerEpoch = 20000
 kBatchSize = 64
-kTrainingSplit = 0.7
+kTrainingSplit = 0.8
 
 # Adding of images
 kAddingFactor = 2
