@@ -1,24 +1,32 @@
 # Introduction
 This repository contains the code targeting the *Behavioral Cloning Project of the Udacity Self Driving Car Nanodegree*.
-The Behavioral Cloning Project aims to copy the human control of a car in a simulator. It uses a Convolutional Deep Neural Network to train a model based on virtual camera images taken from the simulator's car.
+The Behavioral Cloning Project aims to copy the human control of a car in a simulator. It uses a Convolutional Deep Neural Network to train a model based on virtual camera images taken from the simulator's car. It can be seen as a approach to mimik a real conceivable training task of an actual car which in turn would capture real images of the road.
 
-It hence shall mimik a real conceivable training task of a real car taken images from a real road. 
-
-The task was to:
-* first, record training data in simulator's training mode by driving the track yourself. The actual recording of images was already built in the simulator. Alternatively it was possible to use training images provided by Udactiy. I chose the latter option.
-* second, train a network using the recorded images and a csv file containing the corresponding steering angles per image. The networks layout was choosen free of choice.
-* third, evaluate the autonomous driving performance in the simulator's autonomous mode. The simulator hereby takes the trained model and it weights to instantenly compute the correct steering angle for each frame.
+A summary of the task is can be wrapped into three main blocks:
+* First, record training data in simulator's training mode by driving the track yourself. The actual recording of images was already built in the simulator. Alternatively it was possible to use training images provided by Udacity. I chose the latter option.
+* Second, train a network using the recorded images and a csv file containing the corresponding steering angles per image. The networks layout can be choosen free of choice. It is suggetsable, however, to orientate on the already implemnted networks.
+* Third, evaluate the autonomous driving performance in the simulator's autonomous mode. The simulator hereby takes the trained model and it weights to instantenly compute the correct steering angle for each frame.
 
 # Approach
-The approach to tackle this project was a mix of reading trough the mentioned NVidia paper, studying helpful Medium blog posts and Slack message, reading recommended articels by other SDC-lers and applying a handful of engineering try-and-error. 
+The approach to tackle this project was a mix of reading trough the mentioned NVidia paper, studying helpful Medium blog posts and Slack messages, dive into recommended articels by other SDC-lers and applying a handful of engineering try-and-error. Instead of recording own data, I directly used the data set by Udacity, motivated by blog posts saying it is possible, though it contains way less training data as suggested by others to be a minimum. 
+
+I divided the task into those subtasks:
+* Figure out and implement howto use a Generator
+* Read in csv and the coressponding images
+* Pre-process the images
+* Try out and implement augmentation techniques
+* Research for a applicable model and implement with keras
+* Get the autonomous driving mode to run with the model
+
+Before the final architecture was decided and the model well trained, a working chain was in focus.
 
 ## Car Recovery
-We can incorporate the left and right camera images to simulate recovery, by adding or subtracting an artificial steering angle to the center steering value according to the direction.
+As noted in the lectures, the model must be trained for recovery as it might occur that the car diverges from the "ideal" center line. This cna be either done by recording exact these recorver actions, or, as suggested by the NVIDIA paper, We can incorporate the left and right camera images to simulate recovery, by adding or subtracting an artificial steering angle to the center steering value according to the direction. This was done and is further described in the augmentation section.
 
 # Data Description
-As described in te exploration document [exploration.html](exploration.html), the data set consists of mainly the two inputs:
-* driving_log.csv
-* images of three virtual cmaeras
+As described in the exploration document [exploration.html](exploration.html), where I did some pre-analysis of the udacity dataset, the data set consists of basically the two inputs:
+* driving_log.csv with driving commands and links to images
+* images of three virtual cameras, left, center and right.
 
 The *driving_log.csv* contains logs of a training session, each recorded frame per row, structured as follow:
 
@@ -30,22 +38,27 @@ The *IMG* folder contains the actual captured images in jpg format, visualized a
 
 ![cameras](exploration/2017-01-18 21_41_42-exploration.png)
 
+For the project I choose to use the already provided data from udacity. Nevertheless I also recorded some data for myself, but this was not included into the training process.
+
 ## Distribution
 By plotting the distribution of the steering angles, we can observe that most of the time the steering angle is close to zero:
-* Strong steering angles are very rare
+* Stronger steering angles are very rare
 * There is a bias towards steering angles which are positive
-Hence, the data set is very unbalanced towards small steering angles which can be problematic in strong curves. Also the bias of positive angles can be problematic.
+Hence, the data set is very unbalanced and biased towards small steering angles which can be problematic in strong curves. Also the bias of positive angles can be problematic. In partiular this issue was observable in a latter stage where the model was already quite well trained for the "normal" curves but was struggling with the sharp left after the bridge.
 
+This is the distribution of steering angles before countermeasures:
 ![distribution_before](exploration/2017-01-18 21_42_48-exploration.png)
 
 ## Countermeasures
-* Countermeasuresfor positive steering angle bias: The images can be flipped horizontally (and invert the corresponding steering angle), so that we can reduce the bias for turing left (see section 'Pre-Processing')
-* Countermeasure for small steering angle bias: Possible solution is to increase the number if images and steering angles where we detect a high degree of curvature, based on the actual input steering angle. By duplicating those detected images we get a slighty more balanced dataset.
+I came up with some coutermeasures, namely:
+* Countermeasures for positive steering angle bias: The images can be flipped horizontally (and invert the corresponding steering angle), so that we can reduce the bias for turing left (see section 'Pre-Processing')
+* Countermeasure for small steering angle bias: Possible solution is to increase the number of images and steering angles where we detect a high degree of curvature, based on the actual input steering angle. By duplicating those detected images we get a slighty more balanced dataset. Note that by using this technique we are not really generating new data, since we just copying rows from the csv file on the fly. Also, since the augmentation takes place on the fly, it helps overfitting with same images as two augmentations very unlikely equal each other.
 
+This is the distribution of steering angles after "adding" data:
 ![distribution_after](exploration/2017-01-18 21_43_00-exploration.png)
 
 # Model
-The model of the network used for training is a sequential keras model with five layers.
+The model of the network used for training is a sequential keras model with five layers. From the beginning it was quite clear that we need Convolution layers, to be able to exploit the 2D characteristics of the image and to search for reoccuring patterns (like edges).  The activation function shall be non-linear, so I came up with ELUs which were recommended throughout the reviewd documents. Dropout layers reduce overfitting and MaxPooling reduces the size of the outputs. Some more Dense layers after a required Flatten layer gradually reduced the output size to eventually 1 - the actual steering angle value.
 
 1. The first layer is a 2D Convolution with an ELU activation, using the images input shape (kRows = 64, kCols = 64, kChannels = 3) and outputs a shape of 32x32x32. The convolution uses a subsample of (2, 2) to reduce the number of pixels and same padding, which in total reduced the number of pixel dimension by half.
 
@@ -117,8 +130,13 @@ I would not blame the recording in particular, but would in general say that the
 
 # Credits
 Credits shall go in particular to the following blog post, papers and articles:
-* http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf
-* https://medium.com/@subodh.malgonde/teaching-a-car-to-mimic-your-driving-behaviour-c1f0ae543686#.r9rvmm3so
-* https://chatbotslife.com/using-augmentation-to-mimic-human-driving-496b569760a9#.itxajj34m
-* https://carnd-forums.udacity.com/cq/viewquestion.action?id=26214464&questionTitle=behavioral-cloning-cheatsheet
-* https://carnd-udacity.atlassian.net/wiki/pages/viewpage.action?pageId=30441475
+* The NVIDIA paper suggesting a possible model and a procedure to train an actual car: 
+http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf
+* A good solution which influenced my own implementation: 
+https://medium.com/@subodh.malgonde/teaching-a-car-to-mimic-your-driving-behaviour-c1f0ae543686#.r9rvmm3so
+* Very helpful introducing applicable augmentation techniques:
+https://chatbotslife.com/using-augmentation-to-mimic-human-driving-496b569760a9#.itxajj34m
+* Suggestions from a fellow SDCler for basic tricks: 
+https://carnd-forums.udacity.com/cq/viewquestion.action?id=26214464&questionTitle=behavioral-cloning-cheatsheet
+* A good starting point repository for basic ideas about this project:
+https://github.com/commaai/research/blob/master/train_steering_model.py
