@@ -58,11 +58,11 @@ This is the distribution of steering angles after "adding" data:
 ![distribution_after](exploration/2017-01-18 21_43_00-exploration.png)
 
 # Model
-The model of the network used for training is a sequential keras model with five layers. From the beginning it was quite clear that we need Convolution layers, to be able to exploit the 2D characteristics of the image and to search for reoccuring patterns (like edges).  The activation function shall be non-linear, so I came up with ELUs which were recommended throughout the reviewd documents. Dropout layers reduce overfitting and MaxPooling reduces the size of the outputs. Some more Dense layers after a required Flatten layer gradually reduced the output size to eventually 1 - the actual steering angle value.
+The model of the network used for training is a sequential keras model with five layers. From the beginning it was quite clear that we need Convolution layers, to be able to exploit the 2D characteristics of the image and to search for reoccurring patterns (like edges).  The activation function shall be non-linear, so I came up with ELUs which were recommended throughout the reviewed documents. Dropout layers reduce overfitting and MaxPooling reduces the size of the outputs. Some more Dense layers after a required Flatten layer gradually reduced the output size to eventually 1 - the actual steering angle value.
 
-1. The first layer is a 2D Convolution with an ELU activation, using the images input shape (kRows = 64, kCols = 64, kChannels = 3) and outputing a shape of 32x32x32. The convolution uses a subsample of (2, 2) to reduce the number of pixels and same padding, which in total reduced the number of pixel dimension by half.
+1. The first layer is a 2D Convolution with an ELU activation, using the images input shape (kRows = 64, kCols = 64, kChannels = 3) and outputting a shape of 32x32x32. The convolution uses a subsample of (2, 2) to reduce the number of pixels and same padding, which in total reduced the number of pixel dimension by half.
 
-2. In the second layer another Convolution layer is applied, followed by a MaxPooling stride, activated by another ELU. The first Dropout layer with a keep probablity of 40% is introduced to prevent overfitting. The output shape is 15x15x16.
+2. In the second layer another Convolution layer is applied, followed by a MaxPooling stride, activated by another ELU. The first Dropout layer with a keep probability of 40% is introduced to prevent overfitting. The output shape is 15x15x16.
 
 3. A last Convolution layer with again ELU activation, Droput with same 40% keep probability is followed. The Output shape is 13x13x8, since the subsample is (1, 1) with valid padding.
 
@@ -75,7 +75,7 @@ The model of the network used for training is a sequential keras model with five
 7. Since we are not interested into a classification but rather are confronted with a regression problem, we add a slle single dense layer of output shape, which can be understood as the actual value of the output steering angle.
 
 ## Model Visualized
-The model is summarized and visualized as follow using the kears visualization utility:
+The model is summarized and visualized as follow using the keras visualization utility:
 
 ![model](model.png)
 
@@ -92,7 +92,7 @@ This not only reduced the amount of pixels by half, but probably helped the netw
 
 ## Augmentation
 #### Brightness Altering
-By adjusting the brightness of the image we simulate driving under different lighting conditions. For the first track this was helpful as the orientation towards the sun caused different lightninig conditions on the track. This was not indendet to be learned by the network, so all images are andjusted in a random manner. 
+By altering the brightness of the image we simulate driving under different lighting conditions. For the first track this was helpful as the orientation towards the sun caused different lightninig conditions on the track. This was not indended to be learned by the network, so all images are adjusted in a random manner. 
 ### Use left & right camera images to simulate recovery
 Using left and right camera images to simulate the effect of a car wandering to the side and recovering. We add a small angle to the left camera and subtract a small angle from the right camera. The main idea is that the left camera has to move right to get to center, and right camera has to move left.
 #### Flip the images horizontally
@@ -102,9 +102,9 @@ Visualization of the augmentation techniques: Multiple cameras, Flipping and Bri
 ![aug1](exploration/2017-01-18 21_43_33-exploration.png)
 
 #### Traversion of images
-The images are randomly traveres left/right and top/bottom to simulate different positions of the car on the track. In accordance to the amount of pixels the images was shifted a little portion of steering angles is added / subtracted, similiar to the flipping of images.
+The images are randomly traverse left/right and top/bottom to simulate different positions of the car on the track. In accordance to the amount of pixels the images was shifted a little portion of steering angles is added/subtracted, simila to the flipping of images.
 #### Adding Shadows
-By adding random shadows we can increase the number of augmented images to as many as we want. The idea behind the shadowing is that the network will be trained to detect the actual important edges of the street and no edges introduced by bad lightning conditons.
+By adding random shadows we can increase the number of augmented images to as many as we want. The idea behind the shadowing is that the network will be trained to detect the actual important edges of the street and no edges introduced by bad lightning conditions.
 
 Visualization of the augmentation techniques: Traversion and Adding Shadows
 ![aug2](exploration/2017-01-18 21_43_42-exploration.png)
