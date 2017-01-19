@@ -34,14 +34,14 @@ prev_image_array = None
 def telemetry(sid, data):
     # The current steering angle of the car
     steering_angle = data["steering_angle"]
-    
+
     # The current throttle of the car
     throttle = data["throttle"]
-    
+
     # The current speed of the car
     speed = data["speed"]
     speed = float(speed)
-    
+
     # The current image from the center camera of the car
     img_string = data["image"]
     image = Image.open(BytesIO(base64.b64decode(img_string)))
@@ -50,7 +50,7 @@ def telemetry(sid, data):
     # Add the preprocessing step
     image_array = preprocess_image(image_array)
     transformed_image_array = image_array[None, :, :, :]
-    
+
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
 
@@ -76,20 +76,20 @@ def send_control(steering_angle, throttle):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Remote Driving')
-    parser.add_argument('model', 
-                        type=str, 
+    parser.add_argument('model',
+                        type=str,
                         help='Path to model definition json. Model weights should be on the same path.')
-                        
+
     args = parser.parse_args()
-	
+
     with open(args.model, 'r') as jfile:
         model = model_from_json(jfile.read())
 
     model.compile("adam", "mse")
-    
+
     weights_file = args.model.replace('json', 'h5')
     model.load_weights(weights_file)
-    
+
     print("Using maximum speed: " + "{:10.2f}".format(kSpeedMax))
 
     # wrap Flask application with engineio's middleware
@@ -97,4 +97,3 @@ if __name__ == '__main__':
 
     # deploy as an eventlet WSGI server
     eventlet.wsgi.server(eventlet.listen(('', 4567)), app)
-    

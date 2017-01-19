@@ -35,7 +35,7 @@ kSteeringThresholds = [0.20, 0.40, 0.60]
 
 # Directories
 kModelName = 'model'
-kFolderName = 'C:/_HAF/sdc/behavioral-cloning/udacity_data'
+kFolderName = 'udacity_data'
 
 # Preprocessing
 kCropTop = 55
@@ -45,19 +45,19 @@ kMinBrightness = 0.25
 kAddedSteering = 0.001
 kXRange = 80
 kYRange = 40
-	
+
 def main(model_name):
     # Read the whole csv file containing the udacity input data
     input_data = pd.read_csv(kFolderName + '/driving_log.csv')
-   
+
     # Increase number of images with high steering angle
     print("Original size of input data: " + str(len(input_data)))
     input_data = add_curvy_images(input_data, kSteeringThresholds)
     print("Total size of input data: " + str(len(input_data)))
-    
+
     # Shuffle the data
     input_data = input_data.sample(frac=1).reset_index(drop=True)
-    
+
     # Split training and validation into 80/20
     num_rows = input_data.shape[0]
     num_rows_training = int(num_rows * kTrainingSplit)
@@ -65,11 +65,11 @@ def main(model_name):
     # Setup training and validation based on split
     training_data = input_data.loc[0:num_rows_training-1]
     validation_data = input_data.loc[num_rows_training:num_rows-1]
-    
+
     print("Target image size: " + str(kTargetImageSize))
     print("Number of training data: " + str(training_data.shape[0]))
     print("Number of validation data: " + str(validation_data.shape[0]))
- 
+
     # Delete the main input_data from memory
     del input_data
 
@@ -89,10 +89,10 @@ def main(model_name):
     print("Samples per epoch: "+ str(kSamplePerEpoch))
 
     # Perform the training
-    model.fit_generator(generator=training_generator, 
+    model.fit_generator(generator=training_generator,
                         validation_data=validation_generator,
-                        samples_per_epoch=samples_per_epoch, 
-                        nb_epoch=kEpochs, 
+                        samples_per_epoch=samples_per_epoch,
+                        nb_epoch=kEpochs,
                         nb_val_samples=validation_data.shape[0])
 
     # Finally save the model and its weights
@@ -100,32 +100,33 @@ def main(model_name):
     model.save_weights(kModelName + '.h5')
     with open(kModelName + '.json', 'w') as outfile:
         outfile.write(model.to_json())
- 
- 
-def add_curvy_images(input_data, thresholds):    
+
+
+def add_curvy_images(input_data, thresholds):
     abs_steering = np.abs(input_data['steering'])
 
     for threshold in thresholds:
         is_curve = abs_steering > threshold
         curve_rows = input_data[is_curve]
-            
+
         for i in range(kAddingFactor):
             input_data = input_data.append(curve_rows, ignore_index=False)
-            
+
     return input_data.reindex()
-    
-    
+
+
 def load_model(model_name):
     print("Opening previously trained model ...")
-    
+
     with open(args.model, 'r') as jfile:
         model = model_from_json(jfile.read())
 
     model.compile("adam", "mse")
-    
+
     weights_file = args.model.replace('json', 'h5')
     model.load_weights(weights_file)
     return model
+
     
 def build_model():
     # Create a sequential model
@@ -161,16 +162,16 @@ def build_model():
 
     # Finally add a single dense layer, since this is a regression problem, Output is o shape 1
     model.add(Dense(1))
-	
-	# Compile using mse as loss function (softmax would be wrong since we do regression)
+
+    # Compile using mse as loss function (softmax would be wrong since we do regression)
     model.compile(optimizer="adam", loss="mse")
     return model
-       
-       
+
+
 def build_generator(input_data, batch_size=kBatchSize):
     number_of_inputs = input_data.shape[0]
     batches_per_epoch = int(number_of_inputs / batch_size)
-    
+
     batch_index = 0
     while(True):
         start_batch = batch_index * batch_size
@@ -181,7 +182,7 @@ def build_generator(input_data, batch_size=kBatchSize):
         y_batch = np.zeros((batch_size,), dtype=np.float32)
 
         # For the current batch get the image (preprocessed and augmented) and the
-		# corresponding steering angle
+        # corresponding steering angle
         slice_index = 0
         for index, csv_row in input_data.loc[start_batch:end_batch].iterrows():
             X_batch[slice_index], y_batch[slice_index] = get_image_with_steering(csv_row)
@@ -191,11 +192,11 @@ def build_generator(input_data, batch_size=kBatchSize):
         if batch_index == (batches_per_epoch - 1):
             # Reset the index to enable for further loops
             batch_index = 0
-            
-		# Yield is part of the generator and semantically close to "return"
+
+        # Yield is part of the generator and semantically close to "return"
         yield X_batch, y_batch
-     
-    
+
+
 def get_image_with_steering(csv_row):
     steering = csv_row['steering']
 
@@ -222,10 +223,10 @@ def get_image_with_steering(csv_row):
 
     # Apply brightness augmentation
     image = alter_image_brightness(image)
-    
+
     # Add a slice of random shadow
     image = add_shadow(image)
-    
+
     # Apply traversion into x and y direction
     image, added_steering = traverse_image(image)
     steering += added_steering
@@ -233,8 +234,8 @@ def get_image_with_steering(csv_row):
     # Crop, resize and normalize the image
     image = preprocess_image(image)
     return image, steering
-    
-    
+
+
 def alter_image_brightness(image):
     # Convert to HSV space so that its easy to adjust brightness
     altered_image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
@@ -248,56 +249,56 @@ def alter_image_brightness(image):
 
     # Convert to RBG again
     altered_image = cv2.cvtColor(altered_image, cv2.COLOR_HSV2RGB)
-    return altered_image       
-       
-       
+    return altered_image
+
+
 def traverse_image(image):
     # Translation in x direction
     translation_x = kXRange * np.random.uniform() - kXRange / 2
-    
+
     # Changed steering angle based on x-direction
     added_steering_angle = kAddedSteering + translation_x / kXRange * 2 * 0.2
-    
+
     # Translation in x direction
     translation_y = kYRange * np.random.uniform() - kYRange / 2
-    
+
     # Apply the translation using warp method from opencv
     translation_matrix = np.float32([[1, 0, translation_x], [0, 1, translation_y]])
     translated_image = cv2.warpAffine(image, translation_matrix, (kInputCols, kInputRows))
-    
+
     return translated_image, added_steering_angle
 
-    
+
 def add_shadow(image):
     top_y = kInputCols * np.random.uniform()
     top_x = 0
     botom_x = kInputRows
     botom_y = kInputCols * np.random.uniform()
-    
+
     image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-    
+
     shadow_mask = 0 * image[:,:,1]
 
     mesh_x = np.mgrid[0:image.shape[0], 0:image.shape[1]][0]
     mesh_y = np.mgrid[0:image.shape[0], 0:image.shape[1]][1]
-    
+
     is_mask = ((mesh_x - top_x) * (botom_y - top_y) - (botom_x - top_x) * (mesh_y - top_y)) >= 0
     shadow_mask[is_mask] = 1
-   
+
     if np.random.randint(2) == 1:
         random_brightness = kMinBrightness + np.random.uniform()
         mask_on = shadow_mask == 1
         mask_off = shadow_mask == 0
-        
+
         if np.random.randint(2) == 1:
             image[:,:,2][mask_on] = image[:,:,2][mask_on] * random_brightness
         else:
-            image[:,:,2][mask_off] = image[:,:,2][mask_off] * random_brightness    
-            
+            image[:,:,2][mask_off] = image[:,:,2][mask_off] * random_brightness
+
     image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
     return image
 
-       
+
 def preprocess_image(image):
     image = crop_and_resize(image)
     image = image.astype(np.float32)
@@ -305,28 +306,27 @@ def preprocess_image(image):
     # Normalize the image to range [-0.5, +0.5]
     image = (image / 255.0) - 0.5
     return image
-       
-       
+
+
 def crop_and_resize(image):
     cropped_image = image[kCropTop:kCropBottom, :, :]
     processed_image = resize_to_target_image_size(cropped_image)
     return processed_image
-    
-    
+
+
 def resize_to_target_image_size(image):
     return cv2.resize(image, kTargetImageSize)
 
-    
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Remote Driving')
-    parser.add_argument('--model', 
-                        type=str, 
+    parser.add_argument('--model',
+                        type=str,
                         help='Path to model definition json. Model weights should be on the same path.',
                         required=False,
                         default=None)
-                        
+
     args = parser.parse_args()
-    
+
     # Call the main routine
     main(args.model)
-    
