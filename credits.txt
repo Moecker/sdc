@@ -1,4 +1,0 @@
-https://medium.com/@subodh.malgonde/teaching-a-car-to-mimic-your-driving-behaviour-c1f0ae543686#.r9rvmm3so
-https://chatbotslife.com/using-augmentation-to-mimic-human-driving-496b569760a9#.itxajj34m
-https://carnd-forums.udacity.com/cq/viewquestion.action?id=26214464&questionTitle=behavioral-cloning-cheatsheet
-https://carnd-udacity.atlassian.net/wiki/pages/viewpage.action?pageId=30441475
